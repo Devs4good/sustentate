@@ -26,6 +26,7 @@ dependencies {
     })
 
     // Android UI
+    compile 'com.android.support:design:26.0.1'
     compile 'com.android.support:appcompat-v7:26.0.1'
     compile 'com.android.support:support-compat:26.0.1'
     compile 'com.android.support:recyclerview-v7:26.0.1'

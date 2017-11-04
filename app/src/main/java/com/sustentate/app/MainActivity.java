@@ -1,11 +1,14 @@
 package com.sustentate.app;
 
 import android.Manifest;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.sustentate.app.utils.KeySaver;
 
@@ -32,18 +35,26 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private static final int PERMISSION_CAMERA_SD = 3030;
     private Fotoapparat photoApp;
     private PhotoResult result;
+    private ImageView cameraRetake;
+    private ImageView cameraPreview;
+    private ProgressBar cameraLoading;
+
+    private ViewGroup cameraRoot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        cameraRoot = findViewById(R.id.camera_root);
+
         CameraView cameraView = findViewById(R.id.camera_view);
         ImageView cameraTrigger = findViewById(R.id.camera_trigger);
-        final ImageView cameraPreview = findViewById(R.id.camera_preview);
-        ProgressBar cameraLoading = findViewById(R.id.camera_loading);
+        cameraPreview = findViewById(R.id.camera_preview);
+        cameraLoading = findViewById(R.id.camera_loading);
+        cameraRetake = findViewById(R.id.camera_retake);
 
-        if (!KeySaver.isExist(this, Constants.CAMERA_SD_PERMISSION)) requestCameraAndSDPermission();
+        if (!KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) requestCameraAndSDPermission();
 
         photoApp = Fotoapparat.with(this)
                 .into(cameraView)
@@ -54,32 +65,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 .flash(autoFlash())
                 .build();
 
-        cameraTrigger.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                result = photoApp.takePicture();
-                result.saveToFile(saveResult());
-                result.toBitmap(scaled(0.25f))
-                        .whenAvailable(new PendingResult.Callback<BitmapPhoto>() {
-                            @Override
-                            public void onResult(BitmapPhoto result) {
-                                cameraPreview.setVisibility(View.VISIBLE);
-                                cameraPreview.setImageBitmap(result.bitmap);
-                                cameraPreview.setRotation(-result.rotationDegrees);
-                            }
-                        });
-            }
-        });
-    }
-
-    @AfterPermissionGranted(PERMISSION_CAMERA_SD)
-    private void requestCameraAndSDPermission() {
-        String[] perms = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        if (!EasyPermissions.hasPermissions(this, perms)) {
-            EasyPermissions.requestPermissions(this, getString(R.string.camera_and_sd_permission), PERMISSION_CAMERA_SD, perms);
-        } else {
-            KeySaver.savePermission(this, Constants.CAMERA_SD_PERMISSION, true);
-        }
+        cameraTrigger.setOnClickListener(cameraListener);
+        cameraRetake.setOnClickListener(retakeListener);
     }
 
     @Override
@@ -91,7 +78,62 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onStop() {
         super.onStop();
-        if (photoApp != null) photoApp.stop();
+        if (photoApp != null) {
+            try {
+                photoApp.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private File saveResult() {
+        return new File(getExternalFilesDir("Sustentate"), "sus_" + System.currentTimeMillis() + ".jpg");
+    }
+
+    View.OnClickListener cameraListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            cameraLoading.setVisibility(View.VISIBLE);
+            result = photoApp.takePicture();
+            result.saveToFile(saveResult());
+            result.toBitmap(scaled(0.3f))
+                    .whenAvailable(new PendingResult.Callback<BitmapPhoto>() {
+                        @Override
+                        public void onResult(BitmapPhoto result) {
+                            showResult(result);
+                        }
+                    });
+        }
+    };
+
+    View.OnClickListener retakeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            retakePicture();
+        }
+    };
+
+    private void showResult(BitmapPhoto result) {
+        cameraLoading.setVisibility(View.GONE);
+        cameraPreview.setVisibility(View.VISIBLE);
+        cameraPreview.setImageBitmap(result.bitmap);
+        cameraPreview.setRotation(-result.rotationDegrees);
+    }
+
+    private void retakePicture() {
+        cameraPreview.setVisibility(View.GONE);
+        cameraPreview.setImageBitmap(null);
+    }
+
+    @AfterPermissionGranted(PERMISSION_CAMERA_SD)
+    private void requestCameraAndSDPermission() {
+        String[] perms = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        if (!EasyPermissions.hasPermissions(this, perms)) {
+            EasyPermissions.requestPermissions(this, getString(R.string.camera_and_sd_permission), PERMISSION_CAMERA_SD, perms);
+        } else {
+            KeySaver.savePermission(this, Constants.CAMERA_SD_PERMISSION, true);
+        }
     }
 
     @Override
@@ -109,11 +151,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
-
+        if (requestCode == PERMISSION_CAMERA_SD) {
+            Snackbar.make(cameraRoot, "Necesitamos que apruebes los permisos", Snackbar.LENGTH_SHORT).setAction("ACEPTAR", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    requestCameraAndSDPermission();
+                }
+            }).show();
+        }
     }
-
-    private File saveResult() {
-        return new File(getExternalFilesDir("Sustentate"), "sus_" + System.currentTimeMillis() + ".jpg");
-    }
-
 }
