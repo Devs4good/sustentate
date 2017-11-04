@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Sustentate</string>
+    <string name="camera_and_sd_permission">Necesitamos tu permiso de camara y sd card</string>
+</resources>
