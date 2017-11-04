@@ -40,6 +40,7 @@ dependencies {
 
     // HTTP API
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
 
     // Test
     testCompile 'junit:junit:4.12'

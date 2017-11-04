@@ -2,6 +2,7 @@ package com.sustentate.app;
 
 import android.Manifest;
 import android.os.Build;
+import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.sustentate.app.api.ResultListener;
+import com.sustentate.app.api.RetroUpload;
 import com.sustentate.app.utils.Constants;
 import com.sustentate.app.utils.KeySaver;
 
@@ -35,12 +38,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private static final int PERMISSION_CAMERA_SD = 3030;
     private Fotoapparat photoApp;
+    private ViewGroup cameraRoot;
     private ImageView cameraRetake;
     private ImageView cameraPreview;
     private ImageView cameraTrigger;
     private ProgressBar cameraLoading;
 
-    private ViewGroup cameraRoot;
+    private String fileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         cameraPreview = findViewById(R.id.camera_preview);
         cameraLoading = findViewById(R.id.camera_loading);
         cameraRetake = findViewById(R.id.camera_retake);
+        ImageView cameraUpload = findViewById(R.id.camera_upload);
 
         requestPermissionMarshmallow();
 
@@ -68,6 +73,32 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         cameraTrigger.setOnClickListener(cameraListener);
         cameraRetake.setOnClickListener(retakeListener);
+        cameraUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("HOLAS file" + getFile());
+                System.out.println("HOLAS nombre" + fileName);
+                cameraLoading.setVisibility(View.VISIBLE);
+                RetroUpload retro = new RetroUpload();
+                retro.uploadImage(new ResultListener<String>() {
+                    @Override
+                    public void loading() {
+
+                    }
+
+                    @Override
+                    public void finish(String result) {
+                        System.out.println("HOLAS " + result);
+                        cameraLoading.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void error(Throwable error) {
+
+                    }
+                }, getFile());
+            }
+        });
     }
 
     @Override
@@ -92,16 +123,24 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    private File saveResult() {
-        return new File(getExternalFilesDir("Sustentate"), "sus_" + System.currentTimeMillis() + ".jpg");
+    private File getFile() {
+        if (checkFolder()) {
+            return new File(fileName);
+        } else {
+            return null;
+        }
     }
 
-    View.OnClickListener cameraListener = new View.OnClickListener() {
+    private View.OnClickListener cameraListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            fileName = (Environment.getExternalStorageDirectory() + "/Sustentate/")
+                    + "sus_"
+                    + System.currentTimeMillis()
+                    + ".jpg";
             cameraLoading.setVisibility(View.VISIBLE);
             PhotoResult result = photoApp.takePicture();
-            result.saveToFile(saveResult());
+            result.saveToFile(getFile());
             result.toBitmap(scaled(0.3f))
                     .whenAvailable(new PendingResult.Callback<BitmapPhoto>() {
                         @Override
@@ -112,7 +151,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     };
 
-    View.OnClickListener retakeListener = new View.OnClickListener() {
+    private boolean checkFolder() {
+        File folder = new File(Environment.getExternalStorageDirectory() + "/Sustentate");
+        boolean success = true;
+        if (!folder.exists()) { success = folder.mkdir();}
+        return success;
+    }
+
+    private View.OnClickListener retakeListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             retakePicture();
