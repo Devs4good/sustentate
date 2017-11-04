@@ -1,6 +1,7 @@
 package com.sustentate.app;
 
 import android.Manifest;
+import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,8 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
+import com.sustentate.app.utils.Constants;
 import com.sustentate.app.utils.KeySaver;
 
 import java.io.File;
@@ -34,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private static final int PERMISSION_CAMERA_SD = 3030;
     private Fotoapparat photoApp;
-    private PhotoResult result;
     private ImageView cameraRetake;
     private ImageView cameraPreview;
+    private ImageView cameraTrigger;
     private ProgressBar cameraLoading;
 
     private ViewGroup cameraRoot;
@@ -49,12 +50,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         cameraRoot = findViewById(R.id.camera_root);
 
         CameraView cameraView = findViewById(R.id.camera_view);
-        ImageView cameraTrigger = findViewById(R.id.camera_trigger);
+        cameraTrigger = findViewById(R.id.camera_trigger);
         cameraPreview = findViewById(R.id.camera_preview);
         cameraLoading = findViewById(R.id.camera_loading);
         cameraRetake = findViewById(R.id.camera_retake);
 
-        if (!KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) requestCameraAndSDPermission();
+        requestPermissionMarshmallow();
 
         photoApp = Fotoapparat.with(this)
                 .into(cameraView)
@@ -72,7 +73,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     protected void onStart() {
         super.onStart();
-        if (KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) photoApp.start();
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) photoApp.start();
+        } else {
+            photoApp.start();
+        }
     }
 
     @Override
@@ -95,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public void onClick(View view) {
             cameraLoading.setVisibility(View.VISIBLE);
-            result = photoApp.takePicture();
+            PhotoResult result = photoApp.takePicture();
             result.saveToFile(saveResult());
             result.toBitmap(scaled(0.3f))
                     .whenAvailable(new PendingResult.Callback<BitmapPhoto>() {
@@ -145,19 +150,27 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onPermissionsGranted(int requestCode, List<String> list) {
         if (requestCode == PERMISSION_CAMERA_SD) {
-            photoApp.start();
+            if (list.size() > 1 ) photoApp.start();
         }
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
         if (requestCode == PERMISSION_CAMERA_SD) {
+            cameraRetake.setEnabled(false);
+            cameraTrigger.setEnabled(false);
             Snackbar.make(cameraRoot, "Necesitamos que apruebes los permisos", Snackbar.LENGTH_SHORT).setAction("ACEPTAR", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     requestCameraAndSDPermission();
                 }
             }).show();
+        }
+    }
+
+    private void requestPermissionMarshmallow() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (!KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) requestCameraAndSDPermission();
         }
     }
 }

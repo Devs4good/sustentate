@@ -37,5 +37,10 @@ dependencies {
 
     // Camera API
     compile 'io.fotoapparat.fotoapparat:library:1.4.1'
+
+    // HTTP API
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+
+    // Test
     testCompile 'junit:junit:4.12'
 }

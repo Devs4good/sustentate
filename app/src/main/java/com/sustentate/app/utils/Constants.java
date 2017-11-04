@@ -1,4 +1,4 @@
-package com.sustentate.app;
+package com.sustentate.app.utils;
 
 public class Constants {
 
