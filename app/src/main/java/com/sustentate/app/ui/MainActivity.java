@@ -104,6 +104,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private TextView recycleTitle;
     private View recycleBackground;
     private TextView recycleContinue;
+    private TextView recycleSubtitle;
+
+    private double noRec;
+    private double rec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         recycleTitle = recycleRoot.findViewById(R.id.recycle_text);
         recycleBackground = recycleRoot.findViewById(R.id.recycle_bg);
         recycleContinue = recycleRoot.findViewById(R.id.button_continue);
+        recycleSubtitle = recycleRoot.findViewById(R.id.recycle_subtitle);
 
         recycleContinue.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,10 +193,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         recycleRoot.setVisibility(View.VISIBLE);
         if (result) {
             recycleTitle.setText("RECICLABLE");
+            recycleSubtitle.setText("Por favor, asegurate que esté limpio y seco antes de depositarlo en el cesto de color verde.");
             recycleBackground.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
             recycleContinue.setTextColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         } else {
             recycleTitle.setText("NO RECICLABLE");
+            recycleSubtitle.setText("Por favor, depositalo en el cesto de color negro.");
             recycleBackground.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent));
             recycleContinue.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
         }
@@ -216,11 +223,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (classifiers.size() > 0) {
                 List<VisualClassifier.VisualClass> classes = classifiers.get(0).getClasses();
                 for (VisualClassifier.VisualClass items : classes) {
-                    if (items != null && items.getName().equals("rec")) {
-                        System.out.println("SCORE: " + items.getScore());
-                        return items.getScore() > 0.3;
+                    System.out.println("SCORE: " + items.getScore() + " NAME: " + items.getName());
+                    if (items.getName().equals("rec")) {
+                        rec = items.getScore();
+                    }
+
+                    if (items.getName().equals("norec")) {
+                        noRec = items.getScore();
                     }
                 }
+                return (rec - noRec) > 0.19;
             }
         }
         return false;
@@ -433,8 +445,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             if (characteristics != null) {
                 jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
             }
-            int width = 640;
-            int height = 480;
+            int width = 960;
+            int height = 720;
             if (jpegSizes != null && 0 < jpegSizes.length) {
                 width = jpegSizes[0].getWidth();
                 height = jpegSizes[0].getHeight();

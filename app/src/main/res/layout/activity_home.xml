@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="110dp"
         android:layout_marginLeft="35dp"
         android:layout_marginRight="35dp">
 
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="50dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
         android:background="@drawable/round_home_how"
@@ -65,4 +65,14 @@
         android:layout_marginTop="60dp"
         android:elevation="10dp"
         android:src="@drawable/logo_home" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="v 0.9"
+        android:textColor="@android:color/white"
+        android:textSize="14sp" />
 </RelativeLayout>

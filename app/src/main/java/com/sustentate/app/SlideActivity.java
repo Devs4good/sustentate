@@ -39,7 +39,7 @@ public class SlideActivity extends AppCompatActivity {
         List<Fragment> fragmentList = new ArrayList<>();
         fragmentList.add(SlideFragment.newInstance("SUSTENTATE", "Nuestra aplicación móvil esta pensada para ayudarte a saber si un producto es reciclable o no.", R.color.slide_one, R.drawable.slide_one));
         fragmentList.add(SlideFragment.newInstance("¿Cómo funciona?", "Sacale una foto al residuo que tengas duda a través de nuestra aplicación móvil.", R.color.slide_two, R.drawable.slide_two));
-        fragmentList.add(SlideFragment.newInstance("¡Ya está!", "La aplicación analiza la imágen con inteligencia artificial y te indicará en qué cesto depositar el residuo.", R.color.slide_three, R.drawable.slide_three));
+        fragmentList.add(SlideFragment.newInstance("¡Ya está!", "La aplicación analiza la imágen con inteligencia artificial de Watson IBM y te indicará en qué cesto depositar el residuo.", R.color.slide_three, R.drawable.slide_three));
 
         SlideAdapter adapter = new SlideAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
