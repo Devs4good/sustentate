@@ -1,17 +1,20 @@
 package com.sustentate.app.ui;
 
+import android.app.ActivityManager;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.sustentate.app.R;
+import com.sustentate.app.SlideActivity;
+import com.sustentate.app.utils.KeySaver;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
@@ -34,6 +37,14 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomeActivity.this, MainActivity.class));
+            }
+        });
+
+        findViewById(R.id.button_how).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                KeySaver.removeKey(HomeActivity.this, "sliding");
+                startActivity(new Intent(HomeActivity.this, SlideActivity.class));
                 finish();
             }
         });

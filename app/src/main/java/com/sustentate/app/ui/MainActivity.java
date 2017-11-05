@@ -1,6 +1,7 @@
 package com.sustentate.app.ui;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         .withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                recycleRoot.setVisibility(View.GONE);
+                                finish();
                             }
                         });
             }
@@ -216,8 +217,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 List<VisualClassifier.VisualClass> classes = classifiers.get(0).getClasses();
                 for (VisualClassifier.VisualClass items : classes) {
                     if (items != null && items.getName().equals("rec")) {
-                        System.out.println("JAJA: " + items.getScore());
-                        return items.getScore() > 0.7;
+                        System.out.println("SCORE: " + items.getScore());
+                        return items.getScore() > 0.3;
                     }
                 }
             }

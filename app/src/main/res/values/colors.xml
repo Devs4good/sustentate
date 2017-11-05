@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#CC25C19B</color>
+    <color name="colorPrimary">#25C19B</color>
     <color name="colorPrimaryDark">#25C19B</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="slide_one">#1976D2</color>
+    <color name="slide_two">#F4511E</color>
+    <color name="slide_three">#00897B</color>
 </resources>

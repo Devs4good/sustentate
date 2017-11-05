@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.HomeActivity"
+            android:name=".SlideActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,6 +24,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.MainActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.HomeActivity"
             android:screenOrientation="portrait"/>
     </application>
 
