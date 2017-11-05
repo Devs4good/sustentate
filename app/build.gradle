@@ -5,7 +5,7 @@ android {
     buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "com.sustentate.app"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -26,11 +26,15 @@ dependencies {
     })
 
     // Android UI
-    compile 'com.android.support:design:26.0.1'
-    compile 'com.android.support:appcompat-v7:26.0.1'
-    compile 'com.android.support:support-compat:26.0.1'
-    compile 'com.android.support:recyclerview-v7:26.0.1'
+    compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:support-compat:26.1.0'
+    compile 'com.android.support:recyclerview-v7:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    // Glide
+    compile 'com.github.bumptech.glide:glide:4.3.0'
+    compile 'jp.wasabeef:glide-transformations:3.0.1'
 
     // Uses Permissions
     compile 'pub.devrel:easypermissions:1.0.1'
@@ -44,6 +48,9 @@ dependencies {
     // HTTP API
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+
+    // Lottie
+    compile 'com.airbnb.android:lottie:2.2.5'
 
     // Test
     testCompile 'junit:junit:4.12'

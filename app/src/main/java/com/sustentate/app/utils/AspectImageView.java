@@ -5,20 +5,20 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-public class SquareImageView extends ImageView {
-    public SquareImageView(Context context) {
+public class AspectImageView extends ImageView {
+    public AspectImageView(Context context) {
         super(context);
     }
 
-    public SquareImageView(Context context, @Nullable AttributeSet attrs) {
+    public AspectImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public SquareImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public AspectImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public SquareImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public AspectImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
@@ -26,6 +26,7 @@ public class SquareImageView extends ImageView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = getMeasuredWidth();
-        setMeasuredDimension(width, width);
+        double height = width * 1.2;
+        setMeasuredDimension(width, (int) height);
     }
 }
