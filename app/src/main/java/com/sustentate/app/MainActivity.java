@@ -1,6 +1,9 @@
 package com.sustentate.app;
 
 import android.Manifest;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
@@ -11,12 +14,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import com.sustentate.app.api.ResultListener;
-import com.sustentate.app.api.RetroUpload;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifyImagesOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassification;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 import com.sustentate.app.utils.Constants;
 import com.sustentate.app.utils.KeySaver;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 import io.fotoapparat.Fotoapparat;
@@ -46,10 +53,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private String fileName;
 
+    private File finalFile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (getSupportActionBar() != null) getSupportActionBar().hide();
 
         cameraRoot = findViewById(R.id.camera_root);
 
@@ -76,29 +87,81 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         cameraUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("HOLAS file" + getFile());
-                System.out.println("HOLAS nombre" + fileName);
-                cameraLoading.setVisibility(View.VISIBLE);
-                RetroUpload retro = new RetroUpload();
-                retro.uploadImage(new ResultListener<String>() {
-                    @Override
-                    public void loading() {
+                Bitmap bitmap = BitmapFactory.decodeFile(getFile().getPath());
+                System.out.println("HOLAS " + bitmap);
+                Bitmap.createScaledBitmap(bitmap, 500, 500, false);
 
+                File file = null;
+                if (bitmap != null) {
+                    file = new File(fileName);
+                    try {
+                        FileOutputStream outputStream = null;
+                        try {
+                            outputStream = new FileOutputStream(file);
+
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                if (outputStream != null) {
+                                    outputStream.flush();
+                                    outputStream.close();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+                }
+                finalFile = file;
 
-                    @Override
-                    public void finish(String result) {
-                        System.out.println("HOLAS " + result);
-                        cameraLoading.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void error(Throwable error) {
-
-                    }
-                }, getFile());
+                new WatsonTask().execute();
             }
         });
+    }
+
+    private class WatsonTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            return isRecyclable();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean bool) {
+            super.onPostExecute(bool);
+            Snackbar.make(cameraRoot, "ES: " + bool, Snackbar.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isRecyclable() {
+        VisualRecognition service = new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20);
+        service.setApiKey(Constants.WATSON_API);
+
+        ClassifyImagesOptions options = new ClassifyImagesOptions
+                .Builder()
+                .images(finalFile)
+                .threshold(0.0001)
+                .classifierIds("sustentable")
+                .build();
+
+        VisualClassification r2 = service.classify(options).execute();
+        List<ImageClassification> classifications = r2.getImages();
+        if (classifications.size() > 0) {
+            List<VisualClassifier> classifiers = classifications.get(0).getClassifiers();
+            if (classifiers.size() > 0) {
+                List<VisualClassifier.VisualClass> classes = classifiers.get(0).getClasses();
+                for (VisualClassifier.VisualClass items : classes) {
+                    if (items != null && items.getName().equals("rec")) {
+                        return items.getScore() > 0.7;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -124,11 +187,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     private File getFile() {
-        if (checkFolder()) {
-            return new File(fileName);
-        } else {
-            return null;
-        }
+        return new File(fileName);
     }
 
     private View.OnClickListener cameraListener = new View.OnClickListener() {
@@ -154,7 +213,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private boolean checkFolder() {
         File folder = new File(Environment.getExternalStorageDirectory() + "/Sustentate");
         boolean success = true;
-        if (!folder.exists()) { success = folder.mkdir();}
+        if (!folder.exists()) {
+            success = folder.mkdir();
+        }
         return success;
     }
 
@@ -196,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onPermissionsGranted(int requestCode, List<String> list) {
         if (requestCode == PERMISSION_CAMERA_SD) {
-            if (list.size() > 1 ) photoApp.start();
+            if (list.size() > 1) photoApp.start();
         }
     }
 
@@ -216,7 +277,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private void requestPermissionMarshmallow() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            if (!KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION)) requestCameraAndSDPermission();
+            if (!KeySaver.getPermission(this, Constants.CAMERA_SD_PERMISSION))
+                requestCameraAndSDPermission();
         }
     }
 }

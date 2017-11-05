@@ -38,6 +38,9 @@ dependencies {
     // Camera API
     compile 'io.fotoapparat.fotoapparat:library:1.4.1'
 
+    // IBM Watson 
+    compile 'com.ibm.watson.developer_cloud:visual-recognition:3.8.1-SNAPSHOT'
+
     // HTTP API
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
