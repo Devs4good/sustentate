@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def IBM_API_KEY = IbmApiKey
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
@@ -7,10 +9,10 @@ android {
         applicationId "com.sustentate.app"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 5
-        versionName "0.9.3a"
+        versionCode 6
+        versionName "0.9.5a"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        resValue "string", "ibm_api_key", "4dc44ef2a620aeab755695cbcdf5a0826a9554d6"
+        resValue "string", "ibm_api_key", IbmApiKey
     }
     buildTypes {
         release {
