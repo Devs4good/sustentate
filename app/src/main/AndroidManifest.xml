@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".SlideActivity"
+            android:name=".ui.SlideActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,6 +27,8 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.HomeActivity"
             android:screenOrientation="portrait"/>
+        <meta-data android:name="com.sustentate.app.utils.GlideConfiguration"
+            android:value="GlideModule" />
     </application>
 
 </manifest>

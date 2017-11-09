@@ -1,8 +1,6 @@
-package com.sustentate.app;
+package com.sustentate.app.ui;
 
-import android.app.ActivityManager;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,9 +9,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
-import com.sustentate.app.ui.HomeActivity;
-import com.sustentate.app.ui.SlideFragment;
+import com.sustentate.app.R;
+import com.sustentate.app.SlideAdapter;
 import com.sustentate.app.utils.KeySaver;
 
 import java.util.ArrayList;
@@ -24,6 +23,9 @@ import java.util.List;
  */
 
 public class SlideActivity extends AppCompatActivity {
+
+    private Button finish;
+    private Button skip;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,8 +46,11 @@ public class SlideActivity extends AppCompatActivity {
         SlideAdapter adapter = new SlideAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(adapter);
 
-        final Button finish = findViewById(R.id.slide_finish);
+        finish = findViewById(R.id.slide_finish);
         finish.setVisibility(View.GONE);
+
+        skip = findViewById(R.id.slide_skip);
+
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -56,8 +61,10 @@ public class SlideActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 if (position == 2) {
                     finish.setVisibility(View.VISIBLE);
+                    skip.setVisibility(View.GONE);
                 } else {
                     finish.setVisibility(View.GONE);
+                    skip.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -67,18 +74,23 @@ public class SlideActivity extends AppCompatActivity {
             }
         });
 
+        LinearLayout slideIndicator = findViewById(R.id.slide_count);
+
         if (KeySaver.getBoolSavedShare(this, "sliding")) {
             startActivity(new Intent(SlideActivity.this, HomeActivity.class));
             finish();
         }
 
-        finish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                KeySaver.saveShare(SlideActivity.this, "sliding", true);
-                startActivity(new Intent(SlideActivity.this, HomeActivity.class));
-                finish();
-            }
-        });
+        finish.setOnClickListener(onFinishClickListener);
+        skip.setOnClickListener(onFinishClickListener);
     }
+
+    View.OnClickListener onFinishClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            KeySaver.saveShare(SlideActivity.this, "sliding", true);
+            startActivity(new Intent(SlideActivity.this, HomeActivity.class));
+            finish();
+        }
+    };
 }

@@ -1,7 +1,6 @@
 package com.sustentate.app.ui;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +10,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -84,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private TextureView cameraView;
     private Size imageDimension;
     protected CaptureRequest.Builder captureRequestBuilder;
-    private String cameraId;
     private ImageReader imageReader;
     protected CameraCaptureSession cameraCaptureSessions;
 
@@ -108,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private double noRec;
     private double rec;
+
+    private Drawable[] triggerDrawable = new Drawable[2];
+    private TransitionDrawable triggerTransition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +167,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         });
             }
         });
+
+        triggerDrawable[0] = ContextCompat.getDrawable(this, R.drawable.circle_drawable);
+        triggerDrawable[1] = ContextCompat.getDrawable(this, R.drawable.circle_drawable_enable);
+
+        triggerTransition = new TransitionDrawable(triggerDrawable);
+        cameraTrigger.setImageDrawable(triggerTransition);
     }
 
     private class WatsonTask extends AsyncTask<Void, Void, Boolean> {
@@ -171,7 +180,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            cameraAnim.setEnabled(false);
+            cameraRetake.setEnabled(false);
             cameraLoading.setVisibility(View.VISIBLE);
+            cameraHint.setText("IDENTIFICANDO");
         }
 
         @Override
@@ -182,6 +194,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
+            cameraAnim.setEnabled(true);
+            cameraRetake.setEnabled(true);
             animRecycleState(result);
             cameraLoading.setVisibility(View.GONE);
             retakePicture();
@@ -207,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private boolean isRecyclable() {
         VisualRecognition service = new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20);
-        service.setApiKey(Constants.WATSON_API);
+        service.setApiKey(getResources().getString(R.string.ibm_api_key));
 
         ClassifyImagesOptions options = new ClassifyImagesOptions
                 .Builder()
@@ -218,21 +232,23 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         VisualClassification r2 = service.classify(options).execute();
         List<ImageClassification> classifications = r2.getImages();
-        if (classifications.size() > 0) {
-            List<VisualClassifier> classifiers = classifications.get(0).getClassifiers();
-            if (classifiers.size() > 0) {
-                List<VisualClassifier.VisualClass> classes = classifiers.get(0).getClasses();
-                for (VisualClassifier.VisualClass items : classes) {
-                    System.out.println("SCORE: " + items.getScore() + " NAME: " + items.getName());
-                    if (items.getName().equals("rec")) {
-                        rec = items.getScore();
-                    }
+        if (classifications != null) {
+            if (classifications.size() > 0) {
+                List<VisualClassifier> classifiers = classifications.get(0).getClassifiers();
+                if (classifiers.size() > 0) {
+                    List<VisualClassifier.VisualClass> classes = classifiers.get(0).getClasses();
+                    for (VisualClassifier.VisualClass items : classes) {
+                        System.out.println("SCORE: " + items.getScore() + " NAME: " + items.getName());
+                        if (items.getName().equals("rec")) {
+                            rec = items.getScore();
+                        }
 
-                    if (items.getName().equals("norec")) {
-                        noRec = items.getScore();
+                        if (items.getName().equals("norec")) {
+                            noRec = items.getScore();
+                        }
                     }
+                    return (rec - noRec) > 0.19;
                 }
-                return (rec - noRec) > 0.19;
             }
         }
         return false;
@@ -323,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         Bitmap bitmap = BitmapFactory.decodeFile(fileName);
         storeImage(bitmapResize(bitmap, bitmap.getWidth() / 5, bitmap.getHeight() / 5));
         Glide.with(this).load(new File(fileName)).into(cameraPreview);
+        triggerTransition.startTransition(300);
         cameraAnim.setVisibility(View.VISIBLE);
         cameraAnim.playAnimation();
     }
@@ -361,6 +378,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         cameraAnim.setProgress(0);
         cameraHint.setText("CAPTURA UN ELEMENTO");
         cameraTrigger.setEnabled(true);
+        triggerTransition.reverseTransition(300);
 
     }
 
@@ -557,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            cameraId = manager.getCameraIdList()[0];
+            String cameraId = manager.getCameraIdList()[0];
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
