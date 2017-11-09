@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import com.sustentate.app.R;
 import com.sustentate.app.adapter.SlideAdapter;
 import com.sustentate.app.utils.KeySaver;
+import com.sustentate.app.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +23,13 @@ import java.util.List;
  * Created by mzorilla on 11/5/17.
  */
 
-public class SlideActivity extends AppCompatActivity {
+public class SlideActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button finish;
     private Button skip;
+
+    private ViewPager viewPager;
+    private LinearLayout slideIndicator;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,7 +40,7 @@ public class SlideActivity extends AppCompatActivity {
 
         getWindow().setStatusBarColor(ContextCompat.getColor(this, android.R.color.black));
 
-        ViewPager viewPager = findViewById(R.id.view_slide);
+        viewPager = findViewById(R.id.view_slide);
 
         List<Fragment> fragmentList = new ArrayList<>();
         fragmentList.add(SlideFragment.newInstance("SUSTENTATE", "Nuestra aplicación móvil esta pensada para ayudarte a saber si un producto es reciclable o no.", R.color.slide_one, R.drawable.slide_one));
@@ -50,6 +54,18 @@ public class SlideActivity extends AppCompatActivity {
         finish.setVisibility(View.GONE);
 
         skip = findViewById(R.id.slide_skip);
+
+        slideIndicator = findViewById(R.id.slide_count);
+
+        for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
+            slideIndicator.addView(Utils.getViewIndicator(this));
+            slideIndicator.getChildAt(i).setTag(i);
+            slideIndicator.getChildAt(i).setOnClickListener(this);
+        }
+
+        if (slideIndicator.getChildCount() > 0) {
+            slideIndicator.getChildAt(0).setBackground(getDrawable(R.drawable.circle_indicator));
+        }
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -66,6 +82,11 @@ public class SlideActivity extends AppCompatActivity {
                     finish.setVisibility(View.GONE);
                     skip.setVisibility(View.VISIBLE);
                 }
+
+                for (int i = 0; i < slideIndicator.getChildCount(); i++) {
+                    slideIndicator.getChildAt(i).setBackground(getDrawable(R.drawable.circle_indicator_empty));
+                }
+                slideIndicator.getChildAt(position).setBackground(getDrawable(R.drawable.circle_indicator));
             }
 
             @Override
@@ -73,8 +94,6 @@ public class SlideActivity extends AppCompatActivity {
 
             }
         });
-
-        LinearLayout slideIndicator = findViewById(R.id.slide_count);
 
         if (KeySaver.getBoolSavedShare(this, "sliding")) {
             startActivity(new Intent(SlideActivity.this, HomeActivity.class));
@@ -93,4 +112,11 @@ public class SlideActivity extends AppCompatActivity {
             finish();
         }
     };
+
+    @Override
+    public void onClick(View v) {
+        if (viewPager != null) {
+            viewPager.setCurrentItem((int) v.getTag());
+        }
+    }
 }
