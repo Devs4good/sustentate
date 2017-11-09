@@ -119,4 +119,17 @@ public class SlideActivity extends AppCompatActivity implements View.OnClickList
             viewPager.setCurrentItem((int) v.getTag());
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        if (viewPager != null) {
+            if (viewPager.getCurrentItem() > 0) {
+                viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
+            } else {
+                super.onBackPressed();
+            }
+        } else {
+            super.onBackPressed();
+        }
+    }
 }
