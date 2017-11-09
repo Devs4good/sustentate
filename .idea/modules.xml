@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Sustentate.iml" filepath="$PROJECT_DIR$/Sustentate.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sustentate.iml" filepath="$PROJECT_DIR$/sustentate.iml" />
     </modules>
   </component>
 </project>
