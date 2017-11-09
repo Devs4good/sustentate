@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.sustentate.app.R;
-import com.sustentate.app.SlideAdapter;
+import com.sustentate.app.adapter.SlideAdapter;
 import com.sustentate.app.utils.KeySaver;
 
 import java.util.ArrayList;
