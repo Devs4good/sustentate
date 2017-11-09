@@ -7,7 +7,7 @@ android {
         applicationId "com.sustentate.app"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 3
+        versionCode 4
         versionName "0.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
